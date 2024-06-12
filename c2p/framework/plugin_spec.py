@@ -19,7 +19,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from c2p.framework.models.policy import Policy
+from c2p.framework.models.policy import Policy, RuleSet
 from c2p.framework.models.pvp_result import PVPResult
 from c2p.framework.models.raw_result import RawResult
 
@@ -34,4 +34,24 @@ class PluginSpec(ABC):
 
     @abstractmethod
     def generate_pvp_policy(self, policy: Policy) -> Any:
+        pass
+
+
+# Prototype Spec Below
+
+class GeneratorPluginSpec(ABC):
+
+    @abstractmethod
+    def generate_pvp_policy(self, policy: Policy) -> Any:
+        pass
+
+
+class CollectorPluginSpec(ABC):
+
+    @abstractmethod
+    def set_rule_subset(self, rule_set: RuleSet) -> None:
+        pass
+
+    @abstractmethod
+    def generate_pvp_result(self, raw_result: RawResult) -> PVPResult:
         pass
