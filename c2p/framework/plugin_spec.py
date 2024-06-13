@@ -15,7 +15,7 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, List
 
 from pydantic import BaseModel
 
@@ -49,7 +49,7 @@ class GeneratorPluginSpec(ABC):
 class CollectorPluginSpec(ABC):
 
     @abstractmethod
-    def set_rule_subset(self, rule_set: RuleSet) -> None:
+    def set_rule_subset(self, rule_sets: List[RuleSet]) -> None:
         pass
 
     @abstractmethod
