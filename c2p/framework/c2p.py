@@ -132,8 +132,8 @@ class C2P:
 
         return list(map(_conv, filter(lambda x: 'Rule_Id' in x, rule_sets)))
 
-    def _find_rule_set(self, check_id: str, rule_sets: List[_RuleSet]) -> Optional[_RuleSet]:
-        return next(filter(lambda x: x.effective_check_id == check_id, rule_sets), None)
+    def _find_rule_set(self, rule_id: str, rule_sets: List[_RuleSet]) -> Optional[_RuleSet]:
+        return next(filter(lambda x: x.effective_rule_id == rule_id, rule_sets), None)
 
     def _get_parameters(self) -> List[Parameter]:
         parameters: List[Dict[str, str]] = []
@@ -172,8 +172,8 @@ class C2P:
     def _get_observations(self, pvp_result: PVPResult) -> List[Observation]:
         rule_sets = self._get_rule_sets()
         observations = []
-        for observation in pvp_result.observations_by_check:
-            rule_set = self._find_rule_set(observation.check_id, rule_sets)
+        for observation in pvp_result.observations_by_rule:
+            rule_set = self._find_rule_set(observation.rule_id, rule_sets)
             if rule_set != None:
                 subjects = []
                 for subject in observation.subjects:

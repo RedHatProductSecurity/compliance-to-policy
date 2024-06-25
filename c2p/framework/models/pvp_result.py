@@ -116,16 +116,48 @@ class ObservationByCheck(C2PBaseModel):
     props: Optional[List[Property]] = Field(None)
 
 
+class ObservationByRule(C2PBaseModel):
+    """
+    Describes an individual observation based on each Rule_Id defined in Component Definition.
+    """
+
+    title: Optional[str] = Field(
+        None,
+        description='The title for this observation for the check item. If not given, check id is used.',
+        title='Observation Title',
+    )
+    description: Optional[str] = Field(
+        None,
+        description='A human-readable description of this assessment observation. If not given, check description is used.',
+        title='Observation Description',
+    )
+    rule_id: str = Field(..., description='Rule_Id', title='Rule_Id')
+    methods: List[str] = Field(
+        ...,
+        description='Identifies how the observation was made.',
+        title='Observation Method',
+        example=['TEST-AUTOMATED'],
+    )
+    subjects: Optional[List[Subject]] = Field(None)
+    collected: datetime = Field(
+        ...,
+        description='The date and time identifying when the finding information was collected.',
+        title='Collected date/time',
+    )
+    relevant_evidences: Optional[List[Link]] = Field(None)
+    props: Optional[List[Property]] = Field(None)
+
+
 class PVPResult(C2PBaseModel):
-    observations_by_check: Optional[List[ObservationByCheck]] = Field(None)
+    observations_by_rule: Optional[List[ObservationByRule]] = Field(None)
     links: Optional[List[Link]] = Field(None)
 
 
 def set_defaults(pvp_result: PVPResult) -> PVPResult:
-    for observation in pvp_result.observations_by_check:
+    for observation in pvp_result.observations_by_rule:
         if observation.description == None:
-            observation.title = observation.check_id
-            observation.description = observation.check_id
+            observation.title = observation.rule_id
+            observation.description = observation.rule_id
         for subject in observation.subjects:
             if subject.evaluated_on == None:
                 subject.evaluated_on = observation.collected
