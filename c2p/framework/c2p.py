@@ -71,6 +71,7 @@ class C2P:
             self._profile_root: ProfileRoot = ProfileRoot(profile=profile)
         cdef = ComponentDefinition.oscal_read(pathlib.Path(c2p_config.compliance.component_definition))
         self._component_root: ComponentDefinitionRoot = ComponentDefinitionRoot(component_definition=cdef)
+        self._params_by_rules: Dict[str, str] = {}
 
     def set_pvp_result(self, pvp_result: PVPResult):
         self._c2p_config.pvp_result = pvp_result
@@ -94,7 +95,13 @@ class C2P:
         return value
 
     def get_policy(self) -> Policy:
-        return Policy(rule_sets=self.get_rule_sets(), parameters=self.get_parameters())
+        rule_sets = self.get_rule_sets()
+        params = self.get_parameters()
+        for rule in rule_sets:
+            param_ids = self._params_by_rules[rule.rule_id]
+            rule.parameters.append(param_ids)
+
+        return Policy(rule_sets=rule_sets, parameters=params)
 
     def get_rule_sets(self) -> List[RuleSet]:
         _rule_sets = self._get_rule_sets()
@@ -106,6 +113,7 @@ class C2P:
                 check_id=x.effective_check_id,
                 check_description=x.check_description,
                 raw=x.raw,
+                parameters=[]
             )
 
         return list(map(_conv, _rule_sets))
@@ -142,8 +150,11 @@ class C2P:
                 parameters = oscal_utils.group_props_by_remarks(component)
 
         def _conv(x: Dict[str, str]) -> Parameter:
+            rule_id = get_dict_safely(x, 'Rule_Id')
+            param_id = get_dict_safely(x, 'Parameter_Id')
+            self._params_by_rules[rule_id] = param_id
             return Parameter(
-                id=get_dict_safely(x, 'Parameter_Id'),
+                id=param_id,
                 description=get_dict_safely(x, 'Parameter_Description'),
                 value=get_dict_safely(x, 'Parameter_Value_Alternatives'),
             )

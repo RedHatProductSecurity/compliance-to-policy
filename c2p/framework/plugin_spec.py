@@ -38,7 +38,6 @@ class PluginSpec(ABC):
 
 
 # Prototype Spec Below
-
 class GeneratorPluginSpec(ABC):
 
     @abstractmethod
