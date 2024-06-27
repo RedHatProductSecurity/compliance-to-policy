@@ -33,7 +33,7 @@ class RuleSet(C2PBaseModel):
     )
     check_description: Optional[str]
     raw: Optional[Dict[str, str]]
-    parameters: List[str] = Field(..., title="A list of associated rule parameter ids")
+    parameter: Optional[str] = Field(..., title="An associated parameter id")
 
 
 class Parameter(C2PBaseModel):

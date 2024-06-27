@@ -98,8 +98,8 @@ class C2P:
         rule_sets = self.get_rule_sets()
         params = self.get_parameters()
         for rule in rule_sets:
-            param_ids = self._params_by_rules[rule.rule_id]
-            rule.parameters.append(param_ids)
+            param_id = self._params_by_rules.get(rule.rule_id, "")
+            rule.parameter = param_id
 
         return Policy(rule_sets=rule_sets, parameters=params)
 
@@ -113,7 +113,7 @@ class C2P:
                 check_id=x.effective_check_id,
                 check_description=x.check_description,
                 raw=x.raw,
-                parameters=[]
+                parameter=None
             )
 
         return list(map(_conv, _rule_sets))
