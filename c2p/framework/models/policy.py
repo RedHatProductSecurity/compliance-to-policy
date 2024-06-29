@@ -51,3 +51,12 @@ class Parameter(C2PBaseModel):
 class Policy(C2PBaseModel):
     rule_sets: List[RuleSet] = Field(None)
     parameters: List[Parameter] = Field(None)
+
+
+class Capabilities(C2PBaseModel):
+    rule_id: str = Field(
+        ...,
+        title='A unique identifier of a policy (desired state)',
+    )
+    rule_description: Optional[str] = Field(title='Rule description')
+    parameter: Optional[Parameter] = Field(..., title="An associated parameter")

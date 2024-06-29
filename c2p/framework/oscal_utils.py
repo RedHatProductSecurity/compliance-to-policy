@@ -28,7 +28,9 @@ from trestle.oscal.assessment_results import (
     SelectControlById,
 )
 from trestle.oscal.common import Property
-from trestle.oscal.component import ComponentDefinition
+from trestle.oscal.component import ComponentDefinition, DefinedComponent
+from trestle.common.model_utils import ModelUtils
+from trestle.common.list_utils import as_list
 
 from c2p.common.oscal import is_component_type_validation
 
@@ -47,6 +49,20 @@ def group_props_by_remarks(item: TypeWithProps) -> List[Dict[str, str]]:
             grouped[remarks] = {}
         grouped[remarks][prop.name] = prop.value
     return list(map(lambda x: x[1], grouped.items()))
+
+
+def get_link_component_info(comp: DefinedComponent, comp_root: ComponentDefinition) -> str:
+    linked_comp_title: str = ""
+    for linked_comp in as_list(comp_root.components):
+        if not is_component_type_validation(comp.type):
+            uuid_refs = ModelUtils.find_uuid_refs(linked_comp)
+            if comp.uuid in uuid_refs:
+                linked_comp_title = linked_comp.title
+                break
+    if linked_comp_title:
+        return linked_comp_title
+    else:
+        raise RuntimeError("invalid comp set")
 
 
 def reviewed_controls(component_definition: ComponentDefinition) -> ReviewedControls:
