@@ -68,8 +68,9 @@ class GeneratorPluginSpec(ABC):
 
 class CollectorPluginSpec(ABC):
     """Executes, collects, and aggregates policy results."""
-    @abstractmethod
+
     @property
+    @abstractmethod
     def capabilities(self) -> PluginCapabilities:
         pass
 
