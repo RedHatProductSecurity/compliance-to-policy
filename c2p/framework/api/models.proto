@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package c2p.framework.api;
+
+import "google/protobuf/timestamp.proto";
+
+// Define a single rule parameter
+message Parameter {
+  // name is the human-readable parameter identifier
+  string name = 1;
+  // description is the human-readable documentation for the parameter
+  string description = 2;
+  // selected values for the parameter
+  string selected_value = 3;
+}
+
+// Define a single check
+message Check {
+  // name is the human-readable check identifier
+  string name = 1;
+  // description is the human-readable documentation for the check
+  string description = 2;
+}
+
+// Define a single rule
+message Rule {
+  // name is the human-readable technical rule identifier
+  string name = 1;
+  // description is the human-readable documentation for the technical rule
+  string description = 2;
+  // Check Mapped to rule
+  Check check = 4;
+  // Parameter associated with Rule
+  optional Parameter parameter = 5;
+}
+
+message Policy {
+  repeated c2p.framework.api.Rule rules = 1;
+  repeated c2p.framework.api.Parameter parameters = 2;
+}
+
+enum Result {
+  RESULT_UNSPECIFIED = 0;
+  RESULT_ERROR = 1;
+  RESULT_WARNING = 2;
+  RESULT_PASS = 3;
+  RESULT_FAILURE = 4;
+}
+
+message Subject {
+  string title = 1;
+  string resource_id = 2;
+  Result result = 3;
+  google.protobuf.Timestamp evaluated_on = 4;
+  string reason = 5;
+}
+
+
+message ObservationByCheck {
+  string name = 1;
+  string description = 2;
+  string check_id = 3;
+  repeated string methods = 4;
+  google.protobuf.Timestamp collected_at = 5;
+  repeated Subject subjects = 6;
+  repeated string evidence_refs = 7;
+}
+
+// OSCAL Finding
+message Finding{
+  string name = 1;
+  string description = 2;
+  repeated ObservationByCheck related_observations = 3;
+}
+
+message PVPResult {
+  repeated ObservationByCheck observations = 1;
+  map<string, string> links = 2;
+}

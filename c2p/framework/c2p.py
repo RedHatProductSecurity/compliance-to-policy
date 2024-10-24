@@ -15,7 +15,7 @@
 # limitations under the License.
 
 import pathlib
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from pydantic.v1 import BaseModel
 from trestle import __version__ as TRESTLE_VERSION
@@ -44,8 +44,8 @@ from c2p.common.oscal import is_component_type_validation
 from c2p.common.utils import get_dict_safely
 from c2p.framework import oscal_utils
 from c2p.framework.models.c2p_config import C2PConfig
-from c2p.framework.models.policy import Parameter, Policy, RuleSet
-from c2p.framework.models.pvp_result import PVPResult, set_defaults
+from c2p.framework.models.pvp_result import set_defaults
+from c2p.framework.models.models_pb2 import Policy, Parameter, Rule, PVPResult, Check
 
 RuleId = str
 
@@ -71,6 +71,7 @@ class C2P:
             self._profile_root: ProfileRoot = ProfileRoot(profile=profile)
         cdef = ComponentDefinition.oscal_read(pathlib.Path(c2p_config.compliance.component_definition))
         self._component_root: ComponentDefinitionRoot = ComponentDefinitionRoot(component_definition=cdef)
+        self._params_by_rule: Dict[str, str] = {}
 
     def set_pvp_result(self, pvp_result: PVPResult):
         self._c2p_config.pvp_result = pvp_result
@@ -94,21 +95,33 @@ class C2P:
         return value
 
     def get_policy(self) -> Policy:
-        return Policy(rule_sets=self.get_rule_sets(), parameters=self.get_parameters())
+        rule_sets, params = self.get_rule_sets()
+        return Policy(
+            rules=rule_sets,
+            parameters=params
+        )
 
-    def get_rule_sets(self) -> List[RuleSet]:
+    def get_rule_sets(self) -> Tuple[List[Rule], List[Parameter]]:
+        params = self.get_parameters()
         _rule_sets = self._get_rule_sets()
 
+        parameter: Optional[Parameter] = None
+        for rule in _rule_sets:
+            param_id = self._params_by_rule.get(rule.effective_rule_id, "")
+            parameter = Parameter(name=param_id)
+
         def _conv(x: _RuleSet):
-            return RuleSet(
-                rule_id=x.effective_rule_id,
-                rule_description=x.rule_description,
-                check_id=x.effective_check_id,
-                check_description=x.check_description,
-                raw=x.raw,
+            check = Check(
+                name=x.effective_check_id
+            )
+            return Rule(
+                name=x.effective_rule_id,
+                description=x.rule_description,
+                check=check,
+                parameter=parameter
             )
 
-        return list(map(_conv, _rule_sets))
+        return list(map(_conv, _rule_sets)), params
 
     def get_parameters(self) -> List[Parameter]:
         return self._get_parameters()
@@ -142,10 +155,13 @@ class C2P:
                 parameters = oscal_utils.group_props_by_remarks(component)
 
         def _conv(x: Dict[str, str]) -> Parameter:
+            rule_id = get_dict_safely(x, 'Rule_Id')
+            param_id = get_dict_safely(x, 'Parameter_Id')
+            self._params_by_rule[rule_id] = param_id
             return Parameter(
-                id=get_dict_safely(x, 'Parameter_Id'),
+                name=get_dict_safely(x, 'Parameter_Id'),
                 description=get_dict_safely(x, 'Parameter_Description'),
-                value=get_dict_safely(x, 'Parameter_Value_Alternatives'),
+                selected_value=get_dict_safely(x, 'Parameter_Value_Alternatives'),
             )
 
         return list(map(_conv, filter(lambda x: 'Parameter_Id' in x, parameters)))
@@ -172,7 +188,7 @@ class C2P:
     def _get_observations(self, pvp_result: PVPResult) -> List[Observation]:
         rule_sets = self._get_rule_sets()
         observations = []
-        for observation in pvp_result.observations_by_check:
+        for observation in pvp_result.observations:
             rule_set = self._find_rule_set(observation.check_id, rule_sets)
             if rule_set != None:
                 subjects = []

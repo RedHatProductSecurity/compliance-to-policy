@@ -1,3 +1,6 @@
+SRC_DIR := c2p/framework/api
+DST_DIR := c2p/framework/models
+
 .PHONY: build
 build:
 	python -m build
@@ -65,3 +68,7 @@ clean:
 	@rm -rf build *.egg-info dist
 	@find ./plugins -type d \( -name '*.egg-info' -o -name 'dist' \) | while read x; do echo $$x; rm -r $$x ; done 
 	python -m pyclean -v .
+
+generate-protobuf:
+	python -m grpc_tools.protoc -I"${SRC_DIR}" --python_out="${DST_DIR}" --pyi_out="${DST_DIR}" --grpc_python_out="${DST_DIR}" "${SRC_DIR}/models.proto" "${SRC_DIR}/messages.proto" "${SRC_DIR}/scanner.proto" "${SRC_DIR}/remediator.proto"
+.PHONY: generate-protobuf

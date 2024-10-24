@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package c2p.framework.api;
+import "messages.proto";
+
+
+service RemediatingProvider {
+  rpc GetSchema(GetSchemaRequest) returns (GetSchemaResponse);
+  rpc UpdateConfiguration(ConfigureRequest) returns (ConfigureResponse);
+  rpc Generate(GenerateRequest) returns (GenerateResponse);
+  rpc Remediate(RemediationRequest) returns (RemediationResponse);
+}
+

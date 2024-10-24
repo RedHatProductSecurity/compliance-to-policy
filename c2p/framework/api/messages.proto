@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package c2p.framework.api;
+import "models.proto";
+
+message GetSchemaRequest{
+
+}
+
+message GetSchemaResponse{
+  bytes json_schema = 1;
+}
+
+message ConfigureRequest{
+  bytes config = 1;
+}
+
+
+message ConfigureResponse {
+  string error = 1;
+}
+
+message RemediationRequest{
+  repeated c2p.framework.api.Finding findings = 1;
+}
+
+message RemediationResponse{
+  string error = 1;
+}
+
+message GenerateRequest {
+  c2p.framework.api.Policy policy = 1;
+}
+
+message GenerateResponse {
+  string error = 1;
+}
+
+message ScanRequest {
+  
+}
+
+message ScanResponse {
+  c2p.framework.api.PVPResult result = 1;
+  string error = 2;
+}
+
+

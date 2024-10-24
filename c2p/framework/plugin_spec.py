@@ -19,8 +19,7 @@ from typing import Any
 
 from pydantic.v1 import BaseModel
 
-from c2p.framework.models.policy import Policy
-from c2p.framework.models.pvp_result import PVPResult
+from c2p.framework.models.models_pb2 import Policy, PVPResult
 from c2p.framework.models.raw_result import RawResult
 
 PluginConfig = BaseModel

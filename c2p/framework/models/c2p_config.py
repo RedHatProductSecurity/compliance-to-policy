@@ -57,3 +57,6 @@ class C2PConfig(C2PBaseModel):
     result_title: Optional[str]
     result_description: Optional[str]
     result_labels: Optional[List[str]] = None
+
+    class Config:
+        arbitrary_types_allowed = True
