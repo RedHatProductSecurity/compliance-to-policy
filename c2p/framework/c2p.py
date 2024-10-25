@@ -208,7 +208,8 @@ class C2P:
                 for subject in observation.subjects:
                     props: List[Property] = []
                     oscal_utils.add_prop(props, 'resource-id', subject.resource_id, [])
-                    oscal_utils.add_prop(props, 'result', ResultsMappings[subject.result], [])
+                    results_str = ResultsMappings[subject.result]
+                    oscal_utils.add_prop(props, 'result', results_str, [])
                     oscal_utils.add_prop(props, 'evaluated-on', subject.evaluated_on.ToDatetime(), [])
                     oscal_utils.add_prop(props, 'reason', subject.reason, [])
                     s = SubjectReference(
