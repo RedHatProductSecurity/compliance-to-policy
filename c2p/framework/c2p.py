@@ -45,10 +45,23 @@ from c2p.common.utils import get_dict_safely
 from c2p.framework import oscal_utils
 from c2p.framework.models.c2p_config import C2PConfig
 from c2p.framework.models.pvp_result import set_defaults
-from c2p.framework.models.models_pb2 import Policy, Parameter, Rule, PVPResult, Check
+from c2p.framework.models.models_pb2 import (
+    Policy,
+    Parameter,
+    Rule,
+    PVPResult,
+    Check,
+)
+from c2p.framework.models.models_pb2 import Result as _Result
 
 RuleId = str
 
+ResultsMappings = {
+    _Result.RESULT_PASS: "PASS",
+    _Result.RESULT_ERROR: "ERROR",
+    _Result.RESULT_FAILURE: "FAIL",
+    _Result.RESULT_UNSPECIFIED: "INVALID",
+}
 
 class _RuleSet(BaseModel):
     effective_rule_id: str
@@ -195,7 +208,7 @@ class C2P:
                 for subject in observation.subjects:
                     props: List[Property] = []
                     oscal_utils.add_prop(props, 'resource-id', subject.resource_id, [])
-                    oscal_utils.add_prop(props, 'result', subject.result, [])
+                    oscal_utils.add_prop(props, 'result', ResultsMappings[subject.result], [])
                     oscal_utils.add_prop(props, 'evaluated-on', subject.evaluated_on.ToDatetime(), [])
                     oscal_utils.add_prop(props, 'reason', subject.reason, [])
                     s = SubjectReference(
