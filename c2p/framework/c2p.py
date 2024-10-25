@@ -145,8 +145,8 @@ class C2P:
 
         return list(map(_conv, filter(lambda x: 'Rule_Id' in x, rule_sets)))
 
-    def _find_rule_set(self, check_id: str, rule_sets: List[_RuleSet]) -> Optional[_RuleSet]:
-        return next(filter(lambda x: x.effective_check_id == check_id, rule_sets), None)
+    def _find_rule_set(self, rule_id: str, rule_sets: List[_RuleSet]) -> Optional[_RuleSet]:
+        return next(filter(lambda x: x.effective_rule_id == rule_id, rule_sets), None)
 
     def _get_parameters(self) -> List[Parameter]:
         parameters: List[Dict[str, str]] = []
@@ -189,37 +189,38 @@ class C2P:
         rule_sets = self._get_rule_sets()
         observations = []
         for observation in pvp_result.observations:
-            rule_set = self._find_rule_set(observation.check_id, rule_sets)
-            if rule_set != None:
+            rule_set = self._find_rule_set(observation.name, rule_sets)
+            if rule_set is not None:
                 subjects = []
                 for subject in observation.subjects:
-                    props = []
-                    oscal_utils.add_prop(props, 'resource-id', subject, ['resource_id'])
-                    oscal_utils.add_prop(props, 'result', subject, ['result'])
-                    oscal_utils.add_prop(props, 'evaluated-on', subject, ['evaluated_on'])
-                    oscal_utils.add_prop(props, 'reason', subject, ['reason'])
+                    props: List[Property] = []
+                    oscal_utils.add_prop(props, 'resource-id', subject.resource_id, [])
+                    oscal_utils.add_prop(props, 'result', subject.result, [])
+                    oscal_utils.add_prop(props, 'evaluated-on', subject.evaluated_on.ToDatetime(), [])
+                    oscal_utils.add_prop(props, 'reason', subject.reason, [])
                     s = SubjectReference(
-                        subject_uuid=oscal_utils.uuid(), title=subject.title, type=subject.type, props=props
+                        subject_uuid=oscal_utils.uuid(), title=subject.title, type='inventory-item', props=props
                     )
                     subjects.append(s)
 
                 relevant_evidences = []
-                if observation.relevant_evidences != None:
-                    for rel in observation.relevant_evidences:
+                if observation.evidence_refs is not None:
+                    for rel in observation.evidence_refs:
                         relevant_evidences.append(RelevantEvidence(href=rel.href, description=rel.description))
 
                 props = []
                 oscal_utils.add_prop(props, 'assessment-rule-id', rule_set.effective_rule_id, [])
-                if observation.props != None:
-                    props = props + observation.props
+                method_list: List[str] = []
+                for method in observation.methods:
+                    method_list.append(method)
                 o = Observation(
                     uuid=oscal_utils.uuid(),
-                    title=observation.title,
-                    description=observation.title,
-                    methods=observation.methods,
+                    title=observation.name,
+                    description=observation.name,
+                    methods=method_list,
                     props=props,
                     subjects=subjects,
-                    collected=observation.collected,
+                    collected=observation.collected_at.ToDatetime(),
                 )
                 if len(relevant_evidences) > 0:
                     o.relevant_evidence = relevant_evidences
